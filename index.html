@@ -3,103 +3,88 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>WellCheck Discharge Support Agent</title>
+    <title>WellCheck Command Center</title>
     <link rel="stylesheet" href="src/styles.css">
   </head>
   <body>
-    <main class="app">
-      <section class="topbar">
+    <main class="shell">
+      <header class="masthead">
         <div>
-          <p class="eyebrow">Challenge 5 / Healthcare & Wellbeing</p>
-          <h1>WellCheck</h1>
-          <p class="subtitle">AI-powered patient discharge support for safer recovery at home.</p>
+          <p class="eyebrow">AWS Kiro Hackathon / Challenge 5</p>
+          <h1>WellCheck Command Center</h1>
+          <p class="lede">Post-discharge check-ins, explainable risk, and coordinator handoffs in one reliable demo.</p>
         </div>
-        <div class="scorecard" aria-label="Judging alignment">
-          <span>Spec quality</span>
-          <strong>25%</strong>
-          <span>Working demo</span>
-          <strong>30%</strong>
-          <span>Innovation</span>
-          <strong>20%</strong>
-          <span>Pitch</span>
-          <strong>25%</strong>
+        <div class="rubric">
+          <span>Spec</span><strong>25%</strong>
+          <span>Demo</span><strong>30%</strong>
+          <span>Innovation</span><strong>20%</strong>
+          <span>Story</span><strong>25%</strong>
         </div>
+      </header>
+
+      <section class="metrics" aria-label="Coordinator metrics">
+        <article><span>Patients monitored</span><strong id="metricPatients">0</strong></article>
+        <article><span>Need coordinator action</span><strong id="metricActions">0</strong></article>
+        <article><span>Urgent alerts</span><strong id="metricUrgent">0</strong></article>
+        <article><span>Estimated time saved</span><strong>3.8h</strong></article>
       </section>
 
-      <section class="workspace">
-        <section class="panel metrics-panel">
-          <div class="metric">
-            <span>Patients monitored</span>
-            <strong id="metricTotal">0</strong>
-          </div>
-          <div class="metric">
-            <span>Clinical alerts</span>
-            <strong id="metricAlerts">0</strong>
-          </div>
-          <div class="metric">
-            <span>Urgent today</span>
-            <strong id="metricUrgent">0</strong>
-          </div>
-          <div class="metric">
-            <span>Coordinator time saved</span>
-            <strong>3.4h</strong>
-          </div>
-        </section>
-
-        <section class="panel queue-panel">
-          <div class="section-title">
-            <span>Coordinator queue</span>
+      <section class="grid">
+        <aside class="panel queue-panel">
+          <div class="panel-title">
+            <span>Outreach queue</span>
             <strong>Prioritized</strong>
           </div>
-          <div id="patientQueue"></div>
+          <div id="queue"></div>
+        </aside>
+
+        <section class="panel intake-panel">
+          <div class="panel-title">
+            <span>Discharge intake</span>
+            <strong>Spec input</strong>
+          </div>
+          <textarea id="summaryInput" aria-label="Mock discharge summary"></textarea>
+          <button id="parseButton" type="button">Parse Discharge Plan</button>
+          <div id="planOutput" class="plan-output"></div>
         </section>
 
-        <aside class="panel patient-panel">
-          <div class="section-title">
-            <span>Patient</span>
-            <strong id="riskBadge">High risk</strong>
+        <section class="panel patient-panel">
+          <div class="panel-title">
+            <span>Selected patient</span>
+            <strong id="riskBadge">Risk</strong>
           </div>
           <h2 id="patientName"></h2>
           <dl id="patientFacts"></dl>
-          <h3>Risk factors</h3>
-          <ul id="riskReasons"></ul>
-        </aside>
-
-        <section class="panel plan-panel">
-          <div class="section-title">
-            <span>Extracted care plan</span>
-            <strong>Plain language</strong>
-          </div>
-          <div id="carePlan"></div>
+          <div id="patientBarriers"></div>
         </section>
 
         <section class="panel chat-panel">
-          <div class="section-title">
-            <span>Agent check-in</span>
-            <strong id="scenarioSummary">Ready</strong>
+          <div class="panel-title">
+            <span>Check-in transcript</span>
+            <strong id="languageBadge">Plain language</strong>
           </div>
-          <div class="scenario-row" id="scenarioButtons"></div>
-          <div class="chat" id="chatLog" aria-live="polite"></div>
+          <div id="transcript" class="transcript"></div>
         </section>
 
         <section class="panel alert-panel">
-          <div class="section-title">
-            <span>Clinical alert output</span>
+          <div class="panel-title">
+            <span>Clinical alert</span>
             <strong id="severityBadge">Routine</strong>
           </div>
           <div id="alertOutput"></div>
         </section>
 
         <section class="panel explain-panel">
-          <div class="section-title">
-            <span>Explainability</span>
-            <strong>Traceable</strong>
+          <div class="panel-title">
+            <span>Why this rank?</span>
+            <strong>Explainable</strong>
           </div>
-          <div id="explainOutput"></div>
+          <div id="reasonOutput"></div>
         </section>
       </section>
     </main>
-    <script src="data/sample-patient.js"></script>
+
+    <script src="data/app-data.js"></script>
     <script src="src/app.js"></script>
   </body>
 </html>

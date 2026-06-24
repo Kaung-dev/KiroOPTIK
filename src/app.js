@@ -1,318 +1,202 @@
-const { patient, queuePatients, carePlan, scenarios } = window.wellcheckData;
-
+const seed = window.WellCheckSeed;
 const $ = (id) => document.getElementById(id);
 
-let activePatient = queuePatients[0] ?? patient;
+let selectedPatient = seed.patients[0];
+let selectedAlert = null;
 
-function renderPatient(selectedPatient = activePatient) {
-  $("patientName").textContent = selectedPatient.name;
-  $("riskBadge").textContent = `${selectedPatient.baselineRisk} risk`;
-  $("patientFacts").innerHTML = `
-    <dt>Age</dt><dd>${selectedPatient.age}</dd>
-    <dt>Language</dt><dd>${selectedPatient.language}</dd>
-    <dt>Condition</dt><dd>${selectedPatient.condition}</dd>
-  `;
-  $("riskReasons").innerHTML = selectedPatient.riskReasons.map((reason) => `<li>${reason}</li>`).join("");
+function parseSummary(text) {
+  const lower = text.toLowerCase();
+  const meds = [];
+  if (lower.includes("furosemide")) meds.push("Furosemide 40 mg every morning");
+  if (lower.includes("lisinopril")) meds.push("Lisinopril 10 mg every evening");
+
+  return {
+    diagnosis: lower.includes("heart failure") ? "Heart failure flare, improved before discharge" : "Post-discharge recovery plan",
+    followUp: lower.includes("friday") ? "Cardiology clinic Friday 10:30 AM" : "Follow-up appointment listed in discharge plan",
+    meds,
+    warnings: [
+      "More shortness of breath than yesterday",
+      "Chest pain",
+      "New swelling or rapid weight gain",
+      "Confusion, fall, or fainting",
+    ],
+  };
 }
 
-function renderCarePlan() {
-  $("carePlan").innerHTML = `
-    <div class="plan-block">
-      <h3>Discharge summary</h3>
-      <p>${carePlan.diagnosis}</p>
-    </div>
-    <div class="plan-block">
-      <h3>Recovery goals</h3>
-      <ul>${carePlan.goals.map((goal) => `<li>${goal}</li>`).join("")}</ul>
-    </div>
-    <div class="plan-block">
-      <h3>Medication schedule</h3>
-      ${carePlan.medications.map((med) => `
-        <div class="med">
-          <strong>${med.name}</strong>
-          <span>${med.dose}, ${med.timing}</span>
-          <small>${med.critical ? "Critical" : "As needed"} / patient wording: ${med.plain}</small>
-        </div>
-      `).join("")}
-    </div>
-    <div class="plan-block">
-      <h3>Follow-up appointment</h3>
-      <p>${carePlan.appointment.clinic}: ${carePlan.appointment.date}<br>${carePlan.appointment.location}</p>
-    </div>
-    <div class="plan-block">
-      <h3>Warning signs</h3>
-      <ul>${carePlan.warningSigns.map((sign) => `<li>${sign}</li>`).join("")}</ul>
-    </div>
-  `;
-}
-
-function scoreScenario(scenario, selectedPatient = activePatient) {
-  const patientText = scenario.responses
+function scorePatient(patient) {
+  const text = patient.transcript
     .filter(([speaker]) => speaker === "patient")
-    .map(([, text]) => text.toLowerCase())
+    .map(([, line]) => line.toLowerCase())
     .join(" ");
 
+  let score = patient.risk === "high" ? 2 : 0;
   const evidence = [];
-  const reasoning = [];
-  let score = patient.baselineRisk === "high" ? 1 : 0;
-  if (selectedPatient.baselineRisk === "high") {
-    score = 1;
-    reasoning.push({
-      signal: "Baseline risk",
-      detail: `${selectedPatient.name} is marked high risk because of ${selectedPatient.riskReasons.join(", ")}.`,
-      impact: "+1",
-    });
+  const reasons = [];
+
+  if (patient.risk === "high") {
+    reasons.push(["Baseline risk", "+2", `${patient.name} is high risk: ${patient.barriers.join(", ")}.`]);
   } else {
-    score = 0;
-    reasoning.push({
-      signal: "Baseline risk",
-      detail: `${selectedPatient.name} is standard baseline risk.`,
-      impact: "+0",
-    });
+    reasons.push(["Baseline risk", "+0", `${patient.name} is standard risk with stable supports.`]);
   }
 
-  const missedCriticalMedication =
-    /\b(skipped|missed)\b/.test(patientText) ||
-    patientText.startsWith("no. ") ||
-    patientText.includes(" no. i ");
-
-  if (missedCriticalMedication) {
+  if (/\b(skipped|could not remember|missed)\b/.test(text) || text.includes("no. i")) {
     score += 2;
-    const missedLabel = scenario.id === "urgent-breathing" ? "controller inhaler" : "furosemide";
-    evidence.push(`Missed critical medication: ${missedLabel} was not taken as scheduled.`);
-    reasoning.push({
-      signal: "Medication adherence",
-      detail: "Transcript includes a missed or skipped scheduled medication.",
-      impact: "+2",
-    });
+    evidence.push("Medication adherence concern reported.");
+    reasons.push(["Medication signal", "+2", "Patient answer suggests a missed or misunderstood scheduled medication."]);
   }
 
-  if (patientText.includes("short of breath") || patientText.includes("more trouble breathing") || patientText.includes("sleep sitting up")) {
+  if (text.includes("short of breath") || text.includes("breathing") || text.includes("rescue inhaler")) {
     score += 3;
-    evidence.push("Worsening breathing: patient reports sleeping sitting up and shortness of breath walking.");
-    reasoning.push({
-      signal: "Matched warning sign",
-      detail: "Patient answer maps to discharge warning sign: more trouble breathing than yesterday.",
-      impact: "+3",
-    });
+    evidence.push("Worsening breathing or rescue medication use reported.");
+    reasons.push(["Warning sign match", "+3", "Answer maps to discharge warning sign: breathing worse than yesterday."]);
   }
 
-  if (patientText.includes("swollen") || patientText.includes("swelling")) {
+  if (text.includes("swollen") || text.includes("swelling")) {
     score += 2;
-    evidence.push("Fluid warning sign: patient reports increased ankle swelling.");
-    reasoning.push({
-      signal: "Matched warning sign",
-      detail: "Patient answer maps to discharge warning sign: new or worsening swelling.",
-      impact: "+2",
-    });
-  }
-
-  if (patientText.includes("confirm with my daughter")) {
-    score += 1;
-    evidence.push("Appointment risk: transportation is not fully confirmed.");
-    reasoning.push({
-      signal: "Follow-up barrier",
-      detail: "Patient does not have confirmed transportation for the follow-up appointment.",
-      impact: "+1",
-    });
+    evidence.push("New or worsening swelling reported.");
+    reasons.push(["Warning sign match", "+2", "Answer maps to discharge warning sign: new swelling or fluid buildup."]);
   }
 
   if (evidence.length === 0) {
-    evidence.push("No missed medication, worsening symptom, or transportation barrier reported.");
-    reasoning.push({
-      signal: "No safety trigger",
-      detail: "Transcript does not contain missed medication, worsening symptom, or appointment barrier signals.",
-      impact: "+0",
-    });
+    evidence.push("No missed medication or worsening symptom reported.");
+    reasons.push(["No trigger", "+0", "Transcript did not contain safety escalation signals."]);
   }
 
-  if (score >= 6) {
-    return {
-      severity: "urgent",
-      evidence,
-      reasoning,
-      score,
-      action: "Place Maria at the top of the coordinator call queue today. Confirm medication plan and route symptom escalation to the clinical team.",
-    };
-  }
+  const severity = score >= 7 ? "urgent" : score >= 4 ? "alert" : score >= 2 ? "watch" : "routine";
+  const action = {
+    urgent: "Call today. Route symptom evidence to the clinical team and confirm medication instructions.",
+    alert: "Coordinator callback within one business day for medication education and appointment support.",
+    watch: "Send plain-language education and keep next scheduled check-in.",
+    routine: "Log routine recovery. No coordinator action needed.",
+  }[severity];
 
-  if (score >= 3) {
-    return {
-      severity: "alert",
-      evidence,
-      reasoning,
-      score,
-      action: "Coordinator should call within one business day to review medication adherence and appointment logistics.",
-    };
-  }
-
-  if (score >= 2) {
-    return {
-      severity: "watch",
-      evidence,
-      reasoning,
-      score,
-      action: "Send education reminder and keep patient on the next scheduled check-in.",
-    };
-  }
-
-  return {
-    severity: "routine",
-    evidence,
-    reasoning,
-    score,
-    action: "Log routine check-in. No clinical alert needed.",
-  };
+  return { score, severity, evidence, reasons, action };
 }
 
-let currentScenario = null;
-let currentAlert = null;
-
-function severityRank(severity) {
-  return { urgent: 4, alert: 3, watch: 2, routine: 1 }[severity] ?? 0;
-}
-
-function queueWithScores() {
-  return queuePatients
-    .map((queuedPatient) => {
-      const scenario = scenarios.find((item) => item.id === queuedPatient.scenarioId) ?? scenarios[0];
-      const alert = scoreScenario(scenario, queuedPatient);
-      return { ...queuedPatient, scenario, alert };
-    })
-    .sort((a, b) => severityRank(b.alert.severity) - severityRank(a.alert.severity));
+function sortedPatients() {
+  const rank = { urgent: 4, alert: 3, watch: 2, routine: 1 };
+  return seed.patients
+    .map((patient) => ({ ...patient, alert: scorePatient(patient) }))
+    .sort((a, b) => rank[b.alert.severity] - rank[a.alert.severity]);
 }
 
 function renderMetrics() {
-  const scored = queueWithScores();
-  $("metricTotal").textContent = scored.length;
-  $("metricAlerts").textContent = scored.filter((item) => ["urgent", "alert"].includes(item.alert.severity)).length;
-  $("metricUrgent").textContent = scored.filter((item) => item.alert.severity === "urgent").length;
+  const rows = sortedPatients();
+  $("metricPatients").textContent = rows.length;
+  $("metricActions").textContent = rows.filter((row) => ["urgent", "alert"].includes(row.alert.severity)).length;
+  $("metricUrgent").textContent = rows.filter((row) => row.alert.severity === "urgent").length;
 }
 
 function renderQueue() {
-  const scored = queueWithScores();
-  $("patientQueue").innerHTML = scored.map((item) => `
-    <button class="queue-item ${item.id === activePatient.id ? "active" : ""}" data-patient-id="${item.id}" type="button">
+  $("queue").innerHTML = sortedPatients().map((patient) => `
+    <button class="queue-row ${patient.id === selectedPatient.id ? "active" : ""}" data-id="${patient.id}" type="button">
       <span>
-        <strong>${item.name}</strong>
-        <small>${item.condition} / ${item.lastCheckIn}</small>
+        <strong>${patient.name}</strong>
+        <small>${patient.condition} / ${patient.language}<br>${patient.lastCheckIn}</small>
       </span>
-      <em class="${item.alert.severity}">${item.alert.severity}</em>
+      <em class="${patient.alert.severity}">${patient.alert.severity}</em>
     </button>
   `).join("");
 
-  $("patientQueue").onclick = (event) => {
-    const button = event.target.closest(".queue-item");
-    if (!button) return;
-    const selected = queuePatients.find((item) => item.id === button.dataset.patientId);
-    if (!selected) return;
-    activePatient = selected;
-    renderPatient(activePatient);
-    renderQueue();
-    renderButtons();
-    runScenario(activePatient.scenarioId);
+  $("queue").onclick = (event) => {
+    const row = event.target.closest(".queue-row");
+    if (!row) return;
+    selectedPatient = seed.patients.find((patient) => patient.id === row.dataset.id) || selectedPatient;
+    renderAll();
   };
 }
 
-function renderButtons() {
-  $("scenarioButtons").innerHTML = scenarios.map((scenario, index) => `
-    <button class="${scenario.id === activePatient.scenarioId ? "active" : ""}" data-id="${scenario.id}">${scenario.label}</button>
-  `).join("");
-
-  $("scenarioButtons").onclick = (event) => {
-    const button = event.target.closest("button");
-    if (!button) return;
-    document.querySelectorAll(".scenario-row button").forEach((btn) => btn.classList.remove("active"));
-    button.classList.add("active");
-    runScenario(button.dataset.id);
-  };
+function renderPatient() {
+  $("patientName").textContent = selectedPatient.name;
+  $("riskBadge").textContent = `${selectedPatient.risk} risk`;
+  $("languageBadge").textContent = selectedPatient.language;
+  $("patientFacts").innerHTML = `
+    <dt>Age</dt><dd>${selectedPatient.age}</dd>
+    <dt>Condition</dt><dd>${selectedPatient.condition}</dd>
+    <dt>Last check-in</dt><dd>${selectedPatient.lastCheckIn}</dd>
+  `;
+  $("patientBarriers").innerHTML = `
+    <h3>Barriers</h3>
+    <ul>${selectedPatient.barriers.map((barrier) => `<li>${barrier}</li>`).join("")}</ul>
+  `;
 }
 
-function runScenario(id) {
-  const scenario = scenarios.find((item) => item.id === id) ?? scenarios[0];
-  const alert = scoreScenario(scenario, activePatient);
-  currentScenario = scenario;
-  currentAlert = alert;
+function renderPlan() {
+  const plan = parseSummary($("summaryInput").value);
+  $("planOutput").innerHTML = `
+    <h3>${plan.diagnosis}</h3>
+    <p><strong>Follow-up:</strong> ${plan.followUp}</p>
+    <h4>Medication schedule</h4>
+    <ul>${plan.meds.map((med) => `<li>${med}</li>`).join("") || "<li>No medications extracted.</li>"}</ul>
+    <h4>Warning signs to check</h4>
+    <ul>${plan.warnings.map((warning) => `<li>${warning}</li>`).join("")}</ul>
+  `;
+}
 
-  $("scenarioSummary").textContent = scenario.summary;
-  document.querySelectorAll(".scenario-row button").forEach((button) => {
-    button.classList.toggle("active", button.dataset.id === scenario.id);
-  });
-  $("chatLog").innerHTML = scenario.responses.map(([speaker, text]) => `
+function renderTranscript() {
+  $("transcript").innerHTML = selectedPatient.transcript.map(([speaker, line]) => `
     <article class="bubble ${speaker}">
-      <span>${speaker === "agent" ? "WellCheck" : activePatient.name}</span>
-      <p>${text}</p>
+      <span>${speaker === "agent" ? "WellCheck" : selectedPatient.name}</span>
+      <p>${line}</p>
     </article>
   `).join("");
-
-  $("severityBadge").textContent = alert.severity;
-  $("severityBadge").className = alert.severity;
-  $("alertOutput").innerHTML = `
-    <div class="alert-card ${alert.severity}">
-      <h3>${alert.severity.toUpperCase()} / ${patient.name}</h3>
-      <p><strong>Profile:</strong> ${activePatient.age}, ${activePatient.condition}, ${activePatient.baselineRisk} baseline risk.</p>
-      <h4>Evidence</h4>
-      <ul>${alert.evidence.map((item) => `<li>${item}</li>`).join("")}</ul>
-      <h4>Recommended coordinator action</h4>
-      <p>${alert.action.replace("Maria", activePatient.name)}</p>
-      <button id="kimiButton" type="button">Generate Kimi coordinator note</button>
-      <pre id="kimiOutput" class="kimi-output">Optional live agent note appears here when the local server has KIMI_API_KEY set.</pre>
-      <small>Generated from simulated post-discharge check-in transcript.</small>
-    </div>
-  `;
-  renderExplanation(alert);
-  $("kimiButton").addEventListener("click", generateKimiNote);
 }
 
-function renderExplanation(alert) {
-  $("explainOutput").innerHTML = `
-    <div class="score-line">
-      <span>Risk score</span>
-      <strong>${alert.score}</strong>
+function renderAlert() {
+  selectedAlert = scorePatient(selectedPatient);
+  $("severityBadge").textContent = selectedAlert.severity;
+  $("severityBadge").className = selectedAlert.severity;
+  $("alertOutput").innerHTML = `
+    <div class="alert-card ${selectedAlert.severity}">
+      <h3>${selectedAlert.severity.toUpperCase()} / ${selectedPatient.name}</h3>
+      <p><strong>Score:</strong> ${selectedAlert.score}</p>
+      <h4>Evidence</h4>
+      <ul>${selectedAlert.evidence.map((item) => `<li>${item}</li>`).join("")}</ul>
+      <h4>Coordinator action</h4>
+      <p>${selectedAlert.action}</p>
+      <button id="kimiButton" type="button">Generate Kimi Note</button>
+      <pre id="kimiOutput">Optional live note appears here when KIMI_API_KEY is set on the local server.</pre>
     </div>
-    ${alert.reasoning.map((item) => `
-      <article class="reason">
-        <strong>${item.signal} <span>${item.impact}</span></strong>
-        <p>${item.detail}</p>
-      </article>
-    `).join("")}
-    <p class="safety-note">The deterministic rules decide severity. Kimi may draft notes, but it does not override the alert level.</p>
   `;
+  $("kimiButton").onclick = generateKimiNote;
+}
+
+function renderReasons() {
+  $("reasonOutput").innerHTML = selectedAlert.reasons.map(([name, impact, detail]) => `
+    <article class="reason">
+      <strong>${name}<span>${impact}</span></strong>
+      <p>${detail}</p>
+    </article>
+  `).join("") + `<p class="safety">Deterministic rules assign severity. Kimi can draft text, but it does not override risk.</p>`;
 }
 
 async function generateKimiNote() {
   const output = $("kimiOutput");
-  const button = $("kimiButton");
   output.textContent = "Calling Kimi through the local server...";
-  button.disabled = true;
-
   try {
     const response = await fetch("/api/agent", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        patient,
-        activePatient,
-        scenario: currentScenario,
-        alert: currentAlert,
-      }),
+      body: JSON.stringify({ patient: selectedPatient, alert: selectedAlert }),
     });
-
     const payload = await response.json();
-    if (!response.ok) {
-      throw new Error(payload.error || "Kimi request failed.");
-    }
+    if (!response.ok) throw new Error(payload.error || "Kimi request failed.");
     output.textContent = payload.note;
   } catch (error) {
     output.textContent = `Live Kimi note unavailable: ${error.message}`;
-  } finally {
-    button.disabled = false;
   }
 }
 
-renderPatient(activePatient);
-renderCarePlan();
-renderMetrics();
-renderQueue();
-renderButtons();
-runScenario(activePatient.scenarioId);
+function renderAll() {
+  renderMetrics();
+  renderQueue();
+  renderPatient();
+  renderPlan();
+  renderTranscript();
+  renderAlert();
+  renderReasons();
+}
+
+$("summaryInput").value = seed.dischargeSummary;
+$("parseButton").onclick = renderPlan;
+renderAll();

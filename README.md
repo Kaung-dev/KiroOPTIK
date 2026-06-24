@@ -1,18 +1,19 @@
-# WellCheck: AI-Powered Patient Discharge Support Agent
+# KiroOPTIK: WellCheck Command Center
 
-WellCheck is a hackathon demo for AWS Kiro Challenge 5, Healthcare & Wellbeing. It turns post-discharge check-ins into a coordinator cockpit: a prioritized patient queue, plain-language recovery guidance, explainable readmission-risk alerts, and optional Kimi-generated coordinator notes.
+WellCheck Command Center is a spec-driven hackathon demo for **AWS Kiro Challenge 5: Healthcare & Wellbeing**.
 
-## Why It Matters
+It helps a hospital discharge coordinator turn messy discharge instructions into:
 
-Discharge coordinators manage many patients each week. Patients, especially elderly or non-English-speaking patients, often leave the hospital with instructions they do not fully understand. WellCheck converts discharge plans into a plain-language conversation and escalates missed medications or worsening symptoms before they become preventable readmissions.
+- a plain-language patient recovery plan
+- a prioritized post-discharge outreach queue
+- an explainable clinical alert
+- a coordinator-ready handoff note
 
-## Run the Demo
+## Run
 
-Open `index.html` in a browser.
+Open `index.html` directly in a browser.
 
-No build step, internet, package install, or backend is required.
-
-Optional local server for Kiro/browser preview:
+Optional local preview server:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/dev-server.ps1
@@ -20,54 +21,32 @@ powershell -ExecutionPolicy Bypass -File scripts/dev-server.ps1
 
 Then open `http://127.0.0.1:4173/`.
 
-Optional live Kimi agent note:
+## Optional Kimi API
+
+The browser demo works without any API. If you want a live generated coordinator note, run the server with:
 
 ```powershell
 $env:KIMI_API_KEY = "your-key-here"
 powershell -ExecutionPolicy Bypass -File scripts/dev-server.ps1
 ```
 
-The API key must stay on the server side. Do not paste it into browser JavaScript, HTML, or committed files.
+The key is read only by the local server. Do not put API keys in frontend files.
 
-## Kiro Spec
-
-Use this spec in Kiro:
+## Kiro Prompt
 
 ```text
-.kiro/specs/wellcheck-agent/
-  requirements.md
-  design.md
-  tasks.md
+#spec:wellcheck-command-center Review the requirements, design, and tasks. Improve gaps, then implement only changes that preserve a reliable no-build browser demo.
 ```
 
-Suggested Kiro prompt:
+## Demo Path
 
-```text
-#spec:wellcheck-agent Review this hackathon demo against the challenge brief. Improve any missing requirements, then implement the remaining tasks while preserving the no-dependency browser demo constraint.
-```
+1. Show the coordinator dashboard and queue.
+2. Paste or review the discharge-summary text.
+3. Click **Parse Discharge Plan**.
+4. Select the urgent patient.
+5. Show the transcript, alert evidence, and explainability trail.
+6. Optionally generate the Kimi coordinator note.
 
-## Deliverables
+## Pitch
 
-- Working agent demo: `index.html`
-- Sample patient conversation transcript: generated in the demo and included in `pitch.md`
-- Kiro spec file: `.kiro/specs/wellcheck-agent/`
-- Clinical alert output: generated in the demo
-- 3-minute pitch: `pitch.md`
-
-## Winning Demo Path
-
-1. Open `index.html`.
-2. Start with the dashboard metrics and prioritized coordinator queue.
-3. Select Maria Lopez or George Patel to show an urgent patient.
-4. Point to the care plan extraction and patient transcript.
-5. Show the urgent clinical alert and explainability panel.
-6. Optionally click "Generate Kimi coordinator note" if `KIMI_API_KEY` is set.
-7. Explain that the coordinator can now prioritize outreach across hundreds of discharged patients.
-
-## What Makes It Stand Out
-
-- Coordinator queue, not just a chatbot
-- Deterministic severity scoring for safety
-- Explainable evidence trail for every alert
-- Multilingual patient support scenario
-- Optional Kimi note generation without exposing API keys
+WellCheck is not a medical chatbot. It is a discharge operations layer that helps coordinators know who needs attention first, why they were flagged, and what evidence should be handed to the care team.

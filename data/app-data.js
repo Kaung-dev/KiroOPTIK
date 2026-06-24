@@ -1,0 +1,86 @@
+window.WellCheckSeed = {
+  dischargeSummary: `Patient: Maria Lopez, 78.
+Discharge diagnosis: heart failure flare, improved after IV diuresis.
+Medication schedule: furosemide 40 mg every morning; lisinopril 10 mg every evening.
+Follow-up: cardiology clinic Friday 10:30 AM.
+Warning signs: more shortness of breath than yesterday, chest pain, new swelling, rapid weight gain, confusion, fall, or fainting.
+Risk profile: elderly, lives alone, Spanish preferred, new medication schedule.`,
+  patients: [
+    {
+      id: "P-1042",
+      name: "Maria Lopez",
+      age: 78,
+      language: "Spanish / English",
+      condition: "Heart failure",
+      lastCheckIn: "Today 9:12 AM",
+      risk: "high",
+      barriers: ["Lives alone", "Spanish preferred", "New diuretic schedule"],
+      transcript: [
+        ["agent", "Hi Maria, this is WellCheck. I help review your recovery plan, but I do not replace your care team."],
+        ["agent", "Did you take your water pill, furosemide, this morning?"],
+        ["patient", "No. I skipped it because I was worried I would need the bathroom too much."],
+        ["agent", "Are you having more trouble breathing than yesterday?"],
+        ["patient", "Yes. I slept sitting up and felt short of breath walking to the kitchen."],
+        ["agent", "Do you have chest pain, confusion, a fall, or new swelling?"],
+        ["patient", "No chest pain, but my ankles are more swollen."],
+      ],
+    },
+    {
+      id: "P-1088",
+      name: "Samuel Reed",
+      age: 64,
+      language: "English",
+      condition: "Pneumonia",
+      lastCheckIn: "Today 8:58 AM",
+      risk: "standard",
+      barriers: ["New inhaler", "Fatigue"],
+      transcript: [
+        ["agent", "Hi Samuel, this is WellCheck. I am checking how recovery is going after discharge."],
+        ["agent", "Did you take your antibiotic today?"],
+        ["patient", "Yes, with breakfast."],
+        ["agent", "Is your breathing worse than yesterday?"],
+        ["patient", "No, I am slowly improving."],
+        ["agent", "Can you attend your follow-up appointment?"],
+        ["patient", "Yes, my wife is driving me."],
+      ],
+    },
+    {
+      id: "P-1134",
+      name: "George Patel",
+      age: 83,
+      language: "English",
+      condition: "COPD",
+      lastCheckIn: "Yesterday 5:20 PM",
+      risk: "high",
+      barriers: ["Age over 75", "Controller/rescue inhaler confusion", "Transportation uncertainty"],
+      transcript: [
+        ["agent", "Hi George, this is WellCheck. I can help your care team know if you need a call."],
+        ["agent", "Did you use your controller inhaler this morning?"],
+        ["patient", "No. I could not remember which inhaler is daily."],
+        ["agent", "Are you more short of breath than yesterday?"],
+        ["patient", "Yes, I needed my rescue inhaler twice today."],
+        ["agent", "Do you have chest pain or confusion?"],
+        ["patient", "No chest pain, but I feel shaky."],
+      ],
+    },
+    {
+      id: "P-1201",
+      name: "Ana Morales",
+      age: 71,
+      language: "Spanish",
+      condition: "Hip replacement",
+      lastCheckIn: "Today 8:21 AM",
+      risk: "high",
+      barriers: ["Mobility limits", "Pain plan confusion", "Spanish preferred"],
+      transcript: [
+        ["agent", "Hola Ana, soy WellCheck. Estoy aqui para repasar su recuperacion."],
+        ["agent", "Tiene mas dolor que ayer?"],
+        ["patient", "Un poco, pero puedo caminar con ayuda."],
+        ["agent", "Tiene fiebre, caida o confusion?"],
+        ["patient", "No, nada de eso."],
+        ["agent", "Tiene transporte para su cita?"],
+        ["patient", "Si, mi hijo me llevara."],
+      ],
+    },
+  ],
+};

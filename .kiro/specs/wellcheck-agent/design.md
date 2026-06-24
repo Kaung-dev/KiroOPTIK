@@ -4,6 +4,8 @@
 
 WellCheck is a browser-based hackathon demo that simulates an AI-powered post-discharge check-in workflow. It turns mock discharge information into a structured recovery plan, runs a patient conversation, detects risk signals, and creates a clinical alert output for the discharge coordinator.
 
+The standout product shape is a coordinator cockpit rather than a single chatbot. The first screen shows the operational queue: who is urgent, why they are urgent, what language support they need, and what the coordinator should do next.
+
 ## Architecture
 
 ```mermaid
@@ -72,6 +74,29 @@ The alert card includes:
 - Evidence from transcript
 - Recommended coordinator action
 - Timestamp and transcript reference
+
+### Coordinator Queue and Metrics
+
+The queue contains multiple synthetic discharged patients with condition, language, last check-in, owner, and risk level. Each row is scored using the deterministic risk engine and visually labeled as routine, watch, alert, or urgent.
+
+Dashboard metrics summarize the workload:
+
+- Patients monitored
+- Clinical alerts
+- Urgent cases today
+- Estimated coordinator time saved
+
+### Explainability Panel
+
+Every alert includes a traceable reason list:
+
+- baseline risk contribution
+- medication adherence signal
+- matched warning sign
+- follow-up barrier
+- no-trigger confirmation for routine scenarios
+
+This panel is designed for judge trust and future clinical governance.
 
 ## Data Model
 

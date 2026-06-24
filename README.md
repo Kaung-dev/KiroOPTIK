@@ -1,6 +1,6 @@
 # WellCheck: AI-Powered Patient Discharge Support Agent
 
-WellCheck is a hackathon demo for AWS Kiro Challenge 5, Healthcare & Wellbeing. It simulates a post-discharge check-in assistant that helps patients understand recovery instructions and flags concerning answers for a hospital discharge coordinator.
+WellCheck is a hackathon demo for AWS Kiro Challenge 5, Healthcare & Wellbeing. It turns post-discharge check-ins into a coordinator cockpit: a prioritized patient queue, plain-language recovery guidance, explainable readmission-risk alerts, and optional Kimi-generated coordinator notes.
 
 ## Why It Matters
 
@@ -57,8 +57,17 @@ Suggested Kiro prompt:
 ## Winning Demo Path
 
 1. Open `index.html`.
-2. Select "Worsening symptoms."
-3. Point to the care plan extraction.
-4. Run the conversation.
-5. Show the urgent clinical alert with evidence and recommended action.
-6. Explain that a coordinator can now prioritize outreach across hundreds of discharged patients.
+2. Start with the dashboard metrics and prioritized coordinator queue.
+3. Select Maria Lopez or George Patel to show an urgent patient.
+4. Point to the care plan extraction and patient transcript.
+5. Show the urgent clinical alert and explainability panel.
+6. Optionally click "Generate Kimi coordinator note" if `KIMI_API_KEY` is set.
+7. Explain that the coordinator can now prioritize outreach across hundreds of discharged patients.
+
+## What Makes It Stand Out
+
+- Coordinator queue, not just a chatbot
+- Deterministic severity scoring for safety
+- Explainable evidence trail for every alert
+- Multilingual patient support scenario
+- Optional Kimi note generation without exposing API keys

@@ -27,6 +27,33 @@
       </section>
 
       <section class="workspace">
+        <section class="panel metrics-panel">
+          <div class="metric">
+            <span>Patients monitored</span>
+            <strong id="metricTotal">0</strong>
+          </div>
+          <div class="metric">
+            <span>Clinical alerts</span>
+            <strong id="metricAlerts">0</strong>
+          </div>
+          <div class="metric">
+            <span>Urgent today</span>
+            <strong id="metricUrgent">0</strong>
+          </div>
+          <div class="metric">
+            <span>Coordinator time saved</span>
+            <strong>3.4h</strong>
+          </div>
+        </section>
+
+        <section class="panel queue-panel">
+          <div class="section-title">
+            <span>Coordinator queue</span>
+            <strong>Prioritized</strong>
+          </div>
+          <div id="patientQueue"></div>
+        </section>
+
         <aside class="panel patient-panel">
           <div class="section-title">
             <span>Patient</span>
@@ -61,6 +88,14 @@
             <strong id="severityBadge">Routine</strong>
           </div>
           <div id="alertOutput"></div>
+        </section>
+
+        <section class="panel explain-panel">
+          <div class="section-title">
+            <span>Explainability</span>
+            <strong>Traceable</strong>
+          </div>
+          <div id="explainOutput"></div>
         </section>
       </section>
     </main>

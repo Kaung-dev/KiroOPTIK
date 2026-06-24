@@ -8,6 +8,7 @@
 - [x] 6. Implement deterministic risk scoring for routine, watch, alert, and urgent states.
 - [x] 7. Add pitch script and judge-facing README.
 - [x] 8. Add optional server-side Kimi API proxy for live coordinator-note generation.
-- [ ] 9. Open the repo in Kiro and ask Kiro to review `#spec:wellcheck-agent` for gaps.
-- [ ] 10. In Kiro, run "implement all incomplete tasks" only after confirming the demo still matches the spec.
-- [ ] 11. Practice the 3-minute pitch and tune the selected scenario for the strongest story.
+- [x] 9. Add coordinator queue, dashboard metrics, and explainable severity trail.
+- [ ] 10. Open the repo in Kiro and ask Kiro to review `#spec:wellcheck-agent` for gaps.
+- [ ] 11. In Kiro, run "implement all incomplete tasks" only after confirming the demo still matches the spec.
+- [ ] 12. Practice the 3-minute pitch and tune the selected scenario for the strongest story.

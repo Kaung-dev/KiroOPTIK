@@ -56,7 +56,7 @@ function Invoke-KimiAgent {
   }
 
   $scenario = $Payload.scenario
-  $patient = $Payload.patient
+  $patient = if ($Payload.activePatient) { $Payload.activePatient } else { $Payload.patient }
   $alert = $Payload.alert
 
   $prompt = @"

@@ -65,13 +65,34 @@ As a discharge coordinator, I want a concise alert output so that I can quickly 
 3. WHEN an urgent concern is detected THEN the system SHALL show the alert in the queue with urgent visual priority.
 4. IF the check-in is routine THEN the system SHALL log the transcript without adding an urgent clinical alert.
 
-### Requirement 5: Demo and Pitch Support
+### Requirement 5: Coordinator Cockpit
+
+As a discharge coordinator, I want a prioritized queue of discharged patients so that I can manage many post-discharge check-ins without reading every transcript first.
+
+#### Acceptance Criteria
+
+1. WHEN the demo opens THEN the system SHALL show multiple discharged patients with risk level, last check-in, condition, language need, and owner.
+2. WHEN patient scenarios are scored THEN the system SHALL sort or visually prioritize urgent and alert patients above routine patients.
+3. WHEN a coordinator selects a patient THEN the system SHALL update the profile, transcript, clinical alert, and explanation trail.
+4. WHEN summary metrics are displayed THEN the system SHALL include patients monitored, clinical alerts, urgent cases, and estimated coordinator time saved.
+
+### Requirement 6: Explainable Severity
+
+As a clinical operations leader, I want every alert to explain why it was raised so that the system feels auditable and safe.
+
+#### Acceptance Criteria
+
+1. WHEN a severity is assigned THEN the system SHALL show the signals that contributed to the score.
+2. WHEN a patient answer matches a discharge warning sign THEN the system SHALL display that trace in the explanation panel.
+3. WHEN an LLM note is generated THEN the system SHALL preserve the deterministic severity as the source of truth.
+
+### Requirement 7: Demo and Pitch Support
 
 As a hackathon presenter, I want the demo to tell a complete story in under three minutes so that judges can see the persona, problem, solution, and measurable impact.
 
 #### Acceptance Criteria
 
-1. WHEN the presenter opens the app THEN the system SHALL show the patient profile, care plan, chat simulation, transcript, and alert queue on one screen.
+1. WHEN the presenter opens the app THEN the system SHALL show metrics, patient queue, patient profile, care plan, chat simulation, transcript, alert output, and explanation trail.
 2. WHEN the presenter clicks a scenario THEN the system SHALL populate the conversation and alert output immediately.
 3. WHEN the presenter needs the pitch THEN the repository SHALL include a concise pitch script tied to the judging criteria.
 4. WHEN the spec is reviewed THEN the repository SHALL include Kiro-compatible requirements, design, and task files.

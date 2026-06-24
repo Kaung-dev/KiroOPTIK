@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>WellCheck Discharge Support Agent</title>
+    <link rel="stylesheet" href="src/styles.css">
+  </head>
+  <body>
+    <main class="app">
+      <section class="topbar">
+        <div>
+          <p class="eyebrow">Challenge 5 / Healthcare & Wellbeing</p>
+          <h1>WellCheck</h1>
+          <p class="subtitle">AI-powered patient discharge support for safer recovery at home.</p>
+        </div>
+        <div class="scorecard" aria-label="Judging alignment">
+          <span>Spec quality</span>
+          <strong>25%</strong>
+          <span>Working demo</span>
+          <strong>30%</strong>
+          <span>Innovation</span>
+          <strong>20%</strong>
+          <span>Pitch</span>
+          <strong>25%</strong>
+        </div>
+      </section>
+
+      <section class="workspace">
+        <aside class="panel patient-panel">
+          <div class="section-title">
+            <span>Patient</span>
+            <strong id="riskBadge">High risk</strong>
+          </div>
+          <h2 id="patientName"></h2>
+          <dl id="patientFacts"></dl>
+          <h3>Risk factors</h3>
+          <ul id="riskReasons"></ul>
+        </aside>
+
+        <section class="panel plan-panel">
+          <div class="section-title">
+            <span>Extracted care plan</span>
+            <strong>Plain language</strong>
+          </div>
+          <div id="carePlan"></div>
+        </section>
+
+        <section class="panel chat-panel">
+          <div class="section-title">
+            <span>Agent check-in</span>
+            <strong id="scenarioSummary">Ready</strong>
+          </div>
+          <div class="scenario-row" id="scenarioButtons"></div>
+          <div class="chat" id="chatLog" aria-live="polite"></div>
+        </section>
+
+        <section class="panel alert-panel">
+          <div class="section-title">
+            <span>Clinical alert output</span>
+            <strong id="severityBadge">Routine</strong>
+          </div>
+          <div id="alertOutput"></div>
+        </section>
+      </section>
+    </main>
+    <script src="data/sample-patient.js"></script>
+    <script src="src/app.js"></script>
+  </body>
+</html>
